@@ -61,16 +61,17 @@ function updateIP() {
 			let name = settings.zone.found[id];
 
 			cloudflare.dnsRecords.read(settings.zone.id, id).then(record => {
-				name = settings.zone.found[id] = record.result.name;
-
 				if (record.result.content == settings.ip) {
 					timeLog("\t"+name+" already updated.")
 					return;
 				}
 
+				name = settings.zone.found[id] = record.result.name;
+				record.result.content = settings.ip;
+
 				cloudflare.dnsRecords.edit(settings.zone.id,
 					id, record.result).then(() => {
-					timeLog("\t"+name+" updated! (before: "+record.result.content+")");
+					timeLog("\t"+name+" updated!");
 				}).catch(err => {
 					timeLog("\t"+name+" errored whilst updating!");
 				});
