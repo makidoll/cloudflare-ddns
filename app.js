@@ -1,3 +1,4 @@
+var moment = require("moment");
 var request = require("request");
 var settings = require(__dirname+"/settings.js");
 var cloudflare = require("cloudflare")({
@@ -27,12 +28,13 @@ function getInfo(callback) {
 				for (var i=0; i<records.result.length; i++) {
 					let record = records.result[i];
 					if (!settings.zone.records.includes(record.name)) continue;
+					if (record.type != "A") continue;
 
 					settings.zone.found[record.id] = record.name;
 					timeLog("\t"+record.name+" found with ID: "+record.id);
 				}
 				timeLog("");
-				timeLog("Complete! Starting public IP checking at an interval of: "+
+				timeLog("Complete! Starting public IP checking at an interval of "+
 					settings.interval+" minutes...");
 
 				return callback();
@@ -63,11 +65,12 @@ function updateIP() {
 
 				if (record.result.content == settings.ip) {
 					timeLog("\t"+name+" already updated.")
+					return;
 				}
 
 				cloudflare.dnsRecords.edit(settings.zone.id,
 					id, record.result).then(() => {
-					timeLog("\t"+name+" updated!");
+					timeLog("\t"+name+" updated! (before: "+record.result.content+")");
 				}).catch(err => {
 					timeLog("\t"+name+" errored whilst updating!");
 				});
