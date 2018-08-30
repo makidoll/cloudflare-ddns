@@ -9,7 +9,7 @@ Firstly make sure you have Node.js and Git installed.
 Then find a suitable location for the program and:
 
 ```bash
-git clone https://gitlab.com/makitty/cloudflare-ddns
+git clone https://github.com/makitsune/cloudflare-ddns
 cd cloudflare-ddns
 cp settings.example.js settings.js
 npm install
