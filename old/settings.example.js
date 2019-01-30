@@ -2,12 +2,13 @@ module.exports = {
 	interval: 5, // minutes
 	cloudflare: {
 		email: "",
-		key: "",
+		key: ""
 	},
-	zones: {
-		"example.com": [			
+	zone: {
+		name: "example.com",
+		records: [
 			"example.com",
-			"www.example.com",
-		],
-	},
+			"www.example.com"
+		]
+	}
 }

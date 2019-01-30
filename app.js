@@ -6,83 +6,85 @@ var cloudflare = require("cloudflare")({
 	key: settings.cloudflare.key,
 });
 
-function timeLog(msg) {
+function log(msg) {
 	console.log("["+moment().format("HH:mm:ss DD/MM/YY")+"] "+msg);
 }
 
-function getInfo(callback) {
-	timeLog("Retrieving info from Cloudflare...")
+function getInfo(userInfo) {
+	return new Promise(async (resolve,reject)=>{
+		log("Retrieving info from Cloudflare...");
+		log("");
+		let info = [];
 
-	// finding and saving zone
-	cloudflare.zones.browse().then(zones => {
-		for (var i=0; i<zones.result.length; i++) {
-			let zone = zones.result[i];
-			if (zone.name != settings.zone.name) continue;
+		// finding and saving zones
+		let zones = await cloudflare.zones.browse();
+		for (const zone of zones.result) {
+			if (!Object.keys(userInfo).includes(zone.name)) continue;
 
-			settings.zone.id = zone.id;
-			timeLog(settings.zone.name+" found with ID: "+settings.zone.id);
+			log(zone.name+" found with ID: "+zone.id);
+			let newZone = {
+				id: zone.id,
+				name: zone.name,
+				records: []
+			};
 
 			// finding and saving records
-			settings.zone.found = {};
-			cloudflare.dnsRecords.browse(settings.zone.id).then(records => {
-				for (var i=0; i<records.result.length; i++) {
-					let record = records.result[i];
-					if (!settings.zone.records.includes(record.name)) continue;
-					if (record.type != "A") continue;
+			let records = await cloudflare.dnsRecords.browse(zone.id);
+			for (const record of records.result) {
+				if (record.type != "A") continue;
+				if (!userInfo[zone.name].includes(record.name)) continue;
 
-					settings.zone.found[record.id] = record.name;
-					timeLog("\t"+record.name+" found with ID: "+record.id);
-				}
-				timeLog("");
-				timeLog("Complete! Starting public IP checking at an interval of "+
-					settings.interval+" minutes...");
+				log("\t"+record.name+" found with ID: "+record.id);
+				newZone.records.push({
+					id: record.id,
+					name: record.name,
+				});
+			}
 
-				return callback();
-			});
+			info.push(newZone);
 		}
-	}).catch(err => {		
-		// zone not found
-		if (!settings.zone.id) {
-			timeLog(settings.zone.name+" could not be found.");
-			process.exit();
-		}
+
+		log("");
+		log("Complete! Starting public IP checking at an interval of "+
+			settings.interval+" minutes...");
+		resolve(info);
 	});
 }
 
-function updateIP() {
-	request("https://canihazip.com/s", function(err, res, ip) {
-		if (err) return timeLog("Error retrieving public IP.");
-		if (settings.ip == ip) return; 
+function updateIP(info) {
+	request("https://canihazip.com/s", async (err, res, ip)=>{
+		if (err) return log("Error retrieving public IP.");
+		if (settings.ip == ip) return;
 
 		settings.ip = ip;
-		timeLog("New IP! ("+settings.ip+") Updating records...");
-		for (var i=0; i<Object.keys(settings.zone.found).length; i++) {
-			let id = Object.keys(settings.zone.found)[i];
-			let name = settings.zone.found[id];
+		log("");
+		log("New IP! ("+settings.ip+") Updating records...");
 
-			cloudflare.dnsRecords.read(settings.zone.id, id).then(record => {
-				if (record.result.content == settings.ip) {
-					timeLog("\t"+name+" already updated.")
-					return;
+		for (const zone of info) {
+			for (let record of zone.records) {
+				record = await cloudflare.dnsRecords.read(zone.id, record.id);
+				if (!record.success) continue;
+				record = record.result;
+
+				if (record.content == settings.ip) {
+					log("\t"+record.name+" already updated.")
+					continue;
 				}
 
-				name = settings.zone.found[id] = record.result.name;
-				record.result.content = settings.ip;
-
-				cloudflare.dnsRecords.edit(settings.zone.id,
-					id, record.result).then(() => {
-					timeLog("\t"+name+" updated!");
+				record.content = settings.ip;
+				cloudflare.dnsRecords.edit(zone.id, record.id, record).then(()=>{
+					log("\t"+record.name+" updated!");
 				}).catch(err => {
-					timeLog("\t"+name+" errored whilst updating!");
+					log("\t"+record.name+" errored whilst updating!");
 				});
-			});
+			}
 		}
 	});
 }
 
-getInfo(function() {
-	setInterval(function() {
-		updateIP();
+getInfo(settings.zones).then(info=>{
+	setInterval(()=>{
+		updateIP(info);
 	}, settings.interval*60*1000);
-	updateIP();
+	updateIP(info);
 });
