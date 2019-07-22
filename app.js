@@ -6,9 +6,9 @@ function log(msg) {
 	let z = n=>("0"+n).slice(-2);
 
 	console.log("["+
-		z(d.getHours())+":"+z(d.getMinutes())+":"+z(d.getSeconds())+" "+
-		d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())
-	+"] "+msg);
+		d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())+" "+
+		z(d.getHours())+":"+z(d.getMinutes())+":"+z(d.getSeconds())+
+	"] "+msg);
 }
 
 function getMyIP() {
