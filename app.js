@@ -81,7 +81,7 @@ function updateIPs(infos) {
 	getMyIP().catch(err=>{
 		return log("Error retrieving public IP.");
 
-	}).then(ip=>{
+	}).then(async ip=>{
 		if (settings.ip == ip) return;
 
 		settings.ip = ip;
