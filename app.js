@@ -3,7 +3,7 @@ var settings = require(__dirname+"/settings.js");
 
 function log(msg) {
 	let d = new Date();
-	let z = n=>("0"+char).slice(-2);
+	let z = n=>("0"+n).slice(-2);
 
 	console.log("["+
 		z(d.getHours())+":"+z(d.getMinutes())+":"+z(d.getSeconds())+" "+
