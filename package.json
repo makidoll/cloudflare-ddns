@@ -3,8 +3,6 @@
 	"author": "Maki",
 	"main": "app.js",
 	"dependencies": {
-		"cloudflare": "^2.4.1",
-		"moment": "^2.21.0",
-		"request": "^2.85.0"
+		"cloudflare": "^2.4.1"
 	}
 }

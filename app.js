@@ -1,9 +1,33 @@
-var moment = require("moment");
-var request = require("request");
+var dns = require("dns");
 var settings = require(__dirname+"/settings.js");
 
 function log(msg) {
-	console.log("["+moment().format("HH:mm:ss DD/MM/YY")+"] "+msg);
+	let d = new Date();
+	let z = n=>("0"+char).slice(-2);
+
+	console.log("["+
+		z(d.getHours())+":"+z(d.getMinutes())+":"+z(d.getSeconds())+" "+
+		d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())
+	+"] "+msg);
+}
+
+function getMyIP() {
+	return new Promise((resolve,reject)=>{
+		dns.resolve("ns1.google.com", (err,records)=>{
+			if (err) return reject(err);
+			if (records.length<1) return reject(err);
+			dns.setServers([records[0]]);
+
+			dns.resolveTxt("o-o.myaddr.l.google.com", (err,records)=>{
+				if (err) return reject(err);
+				if (records.length<1) return reject(err);
+				if (records[0].length<1) return reject(err);
+
+				let ip = records[0][0];
+				resolve(ip);
+			});
+		});
+	});
 }
 
 function getInfo(cloudflare, userInfo) {
@@ -54,15 +78,15 @@ function getInfo(cloudflare, userInfo) {
 }
 
 function updateIPs(infos) {
-	request("https://canihazip.com/s", async (err, res, ip)=>{
-		if (err) return log("Error retrieving public IP.");
+	getMyIP().catch(err=>{
+		return log("Error retrieving public IP.");
+
+	}).then(ip=>{
 		if (settings.ip == ip) return;
 
 		settings.ip = ip;
 		log("");
 		log("New IP! ("+settings.ip+") Updating records...");
-
-
 
 		for (const info of infos) {
 			let cloudflare = info.cloudflare;
