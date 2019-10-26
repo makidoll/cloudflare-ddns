@@ -17,7 +17,7 @@ npm install
 
 Edit `settings.js` to your likings.
 
-You can find your Cloudflare's API key at: https://www.cloudflare.com/a/profile named "Global API Key"
+You can find your Cloudflare's API key at: https://dash.cloudflare.com/profile/api-tokens named "Global API Key"
 
 Run `node app.js` indefinitely or use a process manager such as `pm2`.
 
