@@ -1,27 +1,30 @@
-var dns = require("dns");
-var settings = require(__dirname+"/settings.js");
+const dns = require("dns");
+const settings = require(__dirname + "/settings.js");
 
-function log(msg) {
-	let d = new Date();
-	let z = n=>("0"+n).slice(-2);
-
-	console.log("["+
-		d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())+" "+
-		z(d.getHours())+":"+z(d.getMinutes())+":"+z(d.getSeconds())+
-	"] "+msg);
+function log(message) {
+	const d = new Date();
+	const z = n => ("0" + n).slice(-2);
+	console.log(
+		"[" +
+			[d.getFullYear(), z(d.getMonth() + 1), z(d.getDate())].join("-") +
+			" " +
+			[z(d.getHours()), z(d.getMinutes()), z(d.getSeconds())].join(":") +
+			"] " +
+			message,
+	);
 }
 
 function getMyIP() {
-	return new Promise((resolve,reject)=>{
-		dns.resolve("ns1.google.com", (err,records)=>{
+	return new Promise((resolve, reject) => {
+		dns.resolve("ns1.google.com", (err, records) => {
 			if (err) return reject(err);
-			if (records.length<1) return reject(err);
+			if (records.length < 1) return reject(err);
 			dns.setServers([records[0]]);
 
-			dns.resolveTxt("o-o.myaddr.l.google.com", (err,records)=>{
+			dns.resolveTxt("o-o.myaddr.l.google.com", (err, records) => {
 				if (err) return reject(err);
-				if (records.length<1) return reject(err);
-				if (records[0].length<1) return reject(err);
+				if (records.length < 1) return reject(err);
+				if (records[0].length < 1) return reject(err);
 
 				let ip = records[0][0];
 				resolve(ip);
@@ -31,7 +34,7 @@ function getMyIP() {
 }
 
 function getInfo(cloudflare, userInfo) {
-	return new Promise(async (resolve,reject)=>{
+	return new Promise(async (resolve, reject) => {
 		let info = [];
 
 		// finding and saving zones
@@ -43,7 +46,7 @@ function getInfo(cloudflare, userInfo) {
 			let newZone = {
 				id: zone.id,
 				name: zone.name,
-				records: []
+				records: [],
 			};
 
 			// finding and saving records
@@ -59,63 +62,68 @@ function getInfo(cloudflare, userInfo) {
 				});
 			}
 
-
 			info.push(newZone);
 		}
 
-		info.forEach(zone=>{
-			log(zone.name+" found with ID: "+zone.id);
-			zone.records.forEach(record=>{
-				log("\t"+record.name+" found with ID: "+record.id);
+		info.forEach(zone => {
+			log(zone.name + " found with ID: " + zone.id);
+			zone.records.forEach(record => {
+				log("\t" + record.name + " found with ID: " + record.id);
 			});
 		});
 
 		resolve({
 			cloudflare: cloudflare,
-			zones: info
+			zones: info,
 		});
 	});
 }
 
-function updateIPs(infos) {
-	getMyIP().catch(err=>{
+let currentIP = "";
+
+async function updateIPs(infos) {
+	let ip;
+	try {
+		ip = await getMyIP();
+	} catch (err) {
 		return log("Error retrieving public IP.");
+	}
 
-	}).then(async ip=>{
-		if (settings.ip == ip) return;
+	if (currentIP == ip) return;
+	currentIP = ip;
 
-		settings.ip = ip;
-		log("");
-		log("New IP! ("+settings.ip+") Updating records...");
+	log("");
+	log("New IP! (" + ip + ") Updating records...");
 
-		for (const info of infos) {
-			let cloudflare = info.cloudflare;
-			for (const zone of info.zones) {
-				for (let record of zone.records) {
-					record = await cloudflare.dnsRecords.read(zone.id, record.id);
-					if (!record.success) continue;
-					record = record.result;
+	for (const info of infos) {
+		let cloudflare = info.cloudflare;
+		for (const zone of info.zones) {
+			for (let record of zone.records) {
+				record = await cloudflare.dnsRecords.read(zone.id, record.id);
+				if (!record.success) continue;
+				record = record.result;
 
-					if (record.content == settings.ip) {
-						log("\t"+record.name+" already updated.")
-						continue;
-					}
-
-					record.content = settings.ip;
-					cloudflare.dnsRecords.edit(zone.id, record.id, record).then(()=>{
-						log("\t"+record.name+" updated!");
-					}).catch(err => {
-						log("\t"+record.name+" errored whilst updating!");
-					});
+				if (record.content == ip) {
+					log("\t" + record.name + " already updated.");
+					continue;
 				}
+
+				record.content = ip;
+				cloudflare.dnsRecords
+					.edit(zone.id, record.id, record)
+					.then(() => {
+						log("\t" + record.name + " updated!");
+					})
+					.catch(err => {
+						log("\t" + record.name + " errored whilst updating!");
+					});
 			}
 		}
-	});
+	}
 }
 
-let accounts = []; 
-
-settings.accounts.forEach(account=>{
+let accounts = [];
+settings.accounts.forEach(account => {
 	accounts.push({
 		zones: account.zones,
 		cloudflare: require("cloudflare")({
@@ -127,16 +135,20 @@ settings.accounts.forEach(account=>{
 
 log("Retrieving info from Cloudflare...");
 log("");
-Promise.all(accounts.map(account=>{
-	return getInfo(account.cloudflare, account.zones);
-})).then(infos=>{
+Promise.all(
+	accounts.map(account => {
+		return getInfo(account.cloudflare, account.zones);
+	}),
+).then(infos => {
+	log("");
+	log(
+		"Complete! Starting public IP checking at an interval of " +
+			settings.interval +
+			" minutes...",
+	);
 
-	log("")
-	log("Complete! Starting public IP checking at an interval of "+
-		settings.interval+" minutes...");
-
-	setInterval(()=>{
+	setInterval(() => {
 		updateIPs(infos);
-	}, settings.interval*60*1000);
+	}, settings.interval * 60 * 1000);
 	updateIPs(infos);
 });
