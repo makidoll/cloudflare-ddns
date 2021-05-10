@@ -1,8 +1,9 @@
 {
 	"name": "cloudflare-ddns",
 	"author": "Maki",
-	"main": "app.js",
+	"main": "main.js",
 	"dependencies": {
-		"cloudflare": "^2.4.1"
+		"cloudflare": "^2.7.0",
+		"fancy-log": "^1.3.3"
 	}
 }
