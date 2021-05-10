@@ -145,7 +145,9 @@ async function update() {
 		currentIpv4 = ipv4;
 		currentIpv6 = ipv6;
 
-		await updateDnsForAccount(ipv4, ipv6, accounts[0]);
+		for (const account of accounts) {
+			await updateDnsForAccount(ipv4, ipv6, account);
+		}
 	} else {
 		// log("IP address hasn't changed");
 	}
