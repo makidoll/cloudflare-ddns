@@ -39,7 +39,10 @@ async function ensureRecord(
 	account,
 ) {
 	const record = records.find(
-		record => record.name == recordName && record.type == type,
+		record =>
+			record.name == recordName &&
+			record.type == type &&
+			(record.type == "CAA" ? record.data.tag == "issue" : true),
 	);
 
 	const infoLog = message =>
