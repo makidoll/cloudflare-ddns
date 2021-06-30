@@ -1,4 +1,4 @@
-const dns = require("dns");
+const { getMyIp } = require("./get-my-ip");
 const log = require("fancy-log");
 const settings = require("./settings");
 
@@ -9,26 +9,6 @@ const accounts = settings.accounts.map(account => ({
 		key: account.key,
 	}),
 }));
-
-function getMyIp(ipv6 = false) {
-	return new Promise((resolve, reject) => {
-		(ipv6 ? dns.resolve6 : dns.resolve4)(
-			"ns1.google.com",
-			(err, records) => {
-				if (err) return reject(err);
-				if (records.length < 1) return reject(err);
-				dns.setServers([records[0]]);
-				dns.resolveTxt("o-o.myaddr.l.google.com", (err, records) => {
-					if (err) return reject(err);
-					if (records.length < 1) return reject(err);
-					if (records[0].length < 1) return reject(err);
-					const ip = records[0][0];
-					return resolve(ip);
-				});
-			},
-		);
-	});
-}
 
 async function ensureRecord(
 	type,
