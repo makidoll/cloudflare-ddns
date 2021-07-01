@@ -47,7 +47,7 @@ async function getMyIp(ipv6 = false) {
 
 module.exports.getMyIp = getMyIp;
 
-(async () => {
-	console.log(await getMyIp(false));
-	console.log(await getMyIp(true));
-})();
+// (async () => {
+// 	console.log(await getMyIp(false));
+// 	console.log(await getMyIp(true));
+// })();

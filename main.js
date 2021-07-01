@@ -133,7 +133,15 @@ async function update() {
 	}
 }
 
+function updateSafe() {
+	try {
+		update();
+	} catch (error) {
+		console.error(error);
+	}
+}
+
 setInterval(() => {
-	update();
+	updateSafe();
 }, settings.interval * 60 * 1000);
-update();
+updateSafe();
