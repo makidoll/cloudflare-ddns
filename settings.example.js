@@ -5,7 +5,6 @@ module.exports = {
 		{
 			email: "",
 			key: "",
-			caaIssue: "", // leave empty and no caa certs will be made
 			zones: {
 				"example.com": [
 					"example.com",

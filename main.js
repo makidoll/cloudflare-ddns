@@ -19,10 +19,8 @@ async function ensureRecord(
 	account,
 ) {
 	const record = records.find(
-		record =>
-			record.name == recordName &&
-			record.type == type &&
-			(record.type == "CAA" ? record.data.tag == "issue" : true),
+		record => record.name == recordName && record.type == type,
+		// && (record.type == "CAA" ? record.data.tag == "issue" : true),
 	);
 
 	const infoLog = message =>
@@ -38,46 +36,42 @@ async function ensureRecord(
 				locked: false,
 			};
 
-			if (type == "CAA") {
-				newRecord.data = {
-					flags: 0,
-					tag: "issue",
-					value: "letsencrypt.org",
-				};
-			} else {
-				newRecord.content = content;
-			}
+			// if (type == "CAA") {
+			// 	newRecord.data = {
+			// 		flags: 0,
+			// 		tag: "issue",
+			// 		value: "letsencrypt.org",
+			// 	};
+			// } else {
+			newRecord.content = content;
+			// }
 
 			await account.cloudflare.dnsRecords.add(zoneId, newRecord);
 
 			infoLog("created");
 		} else {
 			// update record
-			if (record.type == "CAA") {
-				if (record.data.value == content) {
-					infoLog("doesn't need updating");
-					return;
-				}
+			// if (record.type == "CAA") {
+			// 	if (record.data.value == content) {
+			// 		infoLog("doesn't need updating");
+			// 		return;
+			// 	}
 
-				record.data.value = content;
-				await account.cloudflare.dnsRecords.edit(
-					zoneId,
-					record.id,
-					record,
-				);
-			} else {
-				if (record.content == content) {
-					infoLog("doesn't need updating");
-					return;
-				}
-
-				record.content = content;
-				await account.cloudflare.dnsRecords.edit(
-					zoneId,
-					record.id,
-					record,
-				);
+			// 	record.data.value = content;
+			// 	await account.cloudflare.dnsRecords.edit(
+			// 		zoneId,
+			// 		record.id,
+			// 		record,
+			// 	);
+			// } else {
+			if (record.content == content) {
+				infoLog("doesn't need updating");
+				return;
 			}
+
+			record.content = content;
+			await account.cloudflare.dnsRecords.edit(zoneId, record.id, record);
+			// }
 
 			infoLog("updated");
 		}
@@ -104,9 +98,9 @@ async function updateDnsForAccount(ipv4, ipv6, account) {
 			ensureRecord("A", ipv4, ...args);
 			if (ipv6 != null) ensureRecord("AAAA", ipv6, ...args);
 
-			if (account.caaIssue) {
-				ensureRecord("CAA", account.caaIssue, ...args);
-			}
+			// if (account.caaIssue) {
+			// 	ensureRecord("CAA", account.caaIssue, ...args);
+			// }
 		}
 	}
 }
