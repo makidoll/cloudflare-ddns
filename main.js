@@ -86,7 +86,7 @@ async function updateDnsForAccount(ipv4, ipv6, account) {
 
 	for (const zone of zones) {
 		const recordsToUpdate = account.zones[zone.name];
-		if (recordsToUpdate == null) return;
+		if (recordsToUpdate == null) continue;
 
 		const records = (await account.cloudflare.dnsRecords.browse(zone.id))
 			.result;
