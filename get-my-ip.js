@@ -1,5 +1,5 @@
 // const dns = require("dns");
-const fetch = require("node-fetch");
+const axios = require("axios");
 
 const validateIpv4 = ip =>
 	// https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
@@ -29,12 +29,13 @@ async function getMyIp(ipv6 = false) {
 	// });
 
 	// http doesnt redirect and replies faster
-	const res = await fetch(
+	const res = await axios(
 		"http://api" + (ipv6 ? "64" : "") + ".ipify.org?format=json",
 	);
-	if (!res.ok) throw new Error("Failed to get IP from host");
 
-	const { ip } = await res.json();
+	// if (!res.ok) throw new Error("Failed to get IP from host");
+
+	const ip = (res.data?.ip ?? "").trim();
 	if (ip == null) throw new Error("Failed to get IP from response");
 
 	const validIpv4 = validateIpv4(ip);
