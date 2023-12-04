@@ -2,6 +2,8 @@
 
 > 🌎 Automatically update your DNS records when your IP changes.
 
+I should rewrite this for Deno
+
 ## Installation
 
 Firstly make sure you have Node.js and Git installed.
@@ -12,7 +14,7 @@ Then find a suitable location for the program and:
 git clone https://github.com/makitsune/cloudflare-ddns
 cd cloudflare-ddns
 cp settings.example.js settings.js
-npm install
+pnpm install
 ```
 
 Edit `settings.js` to your likings.
