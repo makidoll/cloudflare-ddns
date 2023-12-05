@@ -14,7 +14,8 @@ cp settings.example.json settings.json
 
 Edit `settings.json`. Interval is in minutes.
 
-Highly recommend setting zones to `"hotmilk.space": ["hotmilk.space"]` then targeting all your subdomains to `@`
+Highly recommend setting zones to `"hotmilk.space": ["hotmilk.space"]`<br>
+then targeting all your subdomains to `@`
 
 You can find your Cloudflare API key here: https://dash.cloudflare.com/profile/api-tokens (Global API Key)
 
