@@ -14,6 +14,8 @@ cp settings.example.json settings.json
 
 Edit `settings.json`. Interval is in minutes.
 
+Highly recommend setting zones to `"hotmilk.space": ["hotmilk.space"]` then targeting all your subdomains to `@`
+
 You can find your Cloudflare API key here: https://dash.cloudflare.com/profile/api-tokens (Global API Key)
 
 Run `deno run -A main.ts` indefinitely or use a process manager like `pm2`.
