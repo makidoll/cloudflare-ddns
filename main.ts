@@ -77,8 +77,10 @@ async function ensureRecord(
 		// && (record.type == "CAA" ? record.data.tag == "issue" : true),
 	);
 
-	const infoLog = (message: string) =>
-		log("- " + type + " " + recordName + " " + message);
+	const recordLog = (message: string, error: boolean = false) =>
+		(error ? log.error : log)(
+			"- " + type + " " + recordName + " " + message,
+		);
 
 	try {
 		if (record == null) {
@@ -92,7 +94,7 @@ async function ensureRecord(
 				content,
 			});
 
-			infoLog("created");
+			recordLog("created");
 		} else {
 			// update record
 
@@ -100,7 +102,7 @@ async function ensureRecord(
 			if (record.type == "SRV") return;
 
 			if (record.content == content) {
-				infoLog("doesn't need updating");
+				recordLog("doesn't need updating");
 				return;
 			}
 
@@ -112,10 +114,10 @@ async function ensureRecord(
 				record,
 			);
 
-			infoLog("updated");
+			recordLog("updated");
 		}
 	} catch (error) {
-		infoLog("failed to create or update");
+		recordLog("failed to create or update", true);
 		log.error(error);
 	}
 }
