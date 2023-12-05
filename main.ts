@@ -1,10 +1,9 @@
 // @deno-types="npm:@types/fancy-log@2.0.2"
 import log from "npm:fancy-log@2.0.0";
 // @deno-types="npm:@types/cloudflare@2.7.13"
-import Cloudflare, {
-	DnsRecord,
-	DnsRecordWithoutPriority,
-} from "npm:cloudflare@2.9.1";
+import Cloudflare from "npm:cloudflare@2.9.1";
+import * as jsonc from "https://deno.land/std@0.208.0/jsonc/parse.ts";
+import * as path from "https://deno.land/std@0.208.0/path/mod.ts";
 
 interface Account {
 	email: string;
@@ -21,11 +20,12 @@ interface Settings {
 	accounts: Account[];
 }
 
-const settings: Settings = (
-	await import("./settings.json", {
-		with: { type: "json" },
-	})
-).default as any;
+const __dirname = path.dirname(path.fromFileUrl(import.meta.url));
+
+const settings: Settings = jsonc.parse(
+	await Deno.readTextFile(path.resolve(__dirname, "./settings.jsonc")),
+	{ allowTrailingComma: true },
+);
 
 const accounts = settings.accounts.map(account => ({
 	...account,

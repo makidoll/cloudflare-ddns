@@ -9,10 +9,10 @@ Firstly make sure you have **Deno** and **Git** installed.
 ```bash
 git clone https://github.com/makidoll/cloudflare-ddns.git
 cd cloudflare-ddns
-cp settings.example.json settings.json
+cp settings.example.jsonc settings.jsonc
 ```
 
-Edit `settings.json`. Interval is in minutes.
+Edit `settings.jsonc`. Interval is in minutes.
 
 Highly recommend setting zones to `"hotmilk.space": ["hotmilk.space"]`<br>
 then targeting all your subdomains to `@`
