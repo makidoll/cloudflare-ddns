@@ -161,27 +161,23 @@ let currentIpv4: string = "";
 let currentIpv6: string = "";
 
 async function update() {
-	const ipv4 = await getMyIp();
-	const ipv6 = settings.ipv6 ? await getMyIp(true) : null;
-
-	if (currentIpv4 != ipv4 || currentIpv6 != ipv6) {
-		log("New IPv4 address: " + ipv4);
-		if (settings.ipv6) log("New IPv6 address: " + ipv6);
-
-		currentIpv4 = ipv4;
-		currentIpv6 = ipv6;
-
-		for (const account of accounts) {
-			await updateDnsForAccount(ipv4, ipv6, account);
-		}
-	} else {
-		// log("IP address hasn't changed");
-	}
-}
-
-function updateSafe() {
 	try {
-		update();
+		const ipv4 = await getMyIp();
+		const ipv6 = settings.ipv6 ? await getMyIp(true) : null;
+
+		if (currentIpv4 != ipv4 || currentIpv6 != ipv6) {
+			log("New IPv4 address: " + ipv4);
+			if (settings.ipv6) log("New IPv6 address: " + ipv6);
+
+			currentIpv4 = ipv4;
+			currentIpv6 = ipv6;
+
+			for (const account of accounts) {
+				await updateDnsForAccount(ipv4, ipv6, account);
+			}
+		} else {
+			// log("IP address hasn't changed");
+		}
 	} catch (error) {
 		log.error(error);
 	}
@@ -190,6 +186,6 @@ function updateSafe() {
 log(`Interval set to ${settings.interval} minutes`);
 
 setInterval(() => {
-	updateSafe();
+	update();
 }, settings.interval * 60 * 1000);
-updateSafe();
+update();
