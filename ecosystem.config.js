@@ -2,7 +2,9 @@ module.exports = {
 	apps: [
 		{
 			name: "Cloudflare DDNS",
-			script: "main.js",
+			interpreter: "deno",
+			interpreter_args: "run -A",
+			script: "main.ts",
 		},
 	],
 };
